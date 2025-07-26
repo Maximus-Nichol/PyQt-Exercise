@@ -9,6 +9,32 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import requests
+
+#Logic for network request
+'''
+base_url = "https://www.apicountries.com/countries"
+
+def get_countries():
+    response = requests.get(base_url)
+    print(response)
+
+    if response.status_code == 200:
+        country_data = response.json()
+        country_names = sorted([country["name"] for country in country_data])
+        return country_names
+    else:
+        print(f"Failed to retrieve {response.status_code}")
+        return []
+
+country_names = get_countries()
+
+if country_names:
+    print(f"First country: {country_names[0]}")
+else:
+    print("No countries found.")
+
+'''
 
 
 class Ui_MainWindow(object):
