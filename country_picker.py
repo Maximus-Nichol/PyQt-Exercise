@@ -17,6 +17,8 @@ import requests
 import threading
 import argparse
 
+# I have attempted each step in the exercise on the lines highlighted in the README. 
+# Each stage is marked with 'Task' for readability.
 
 base_url = "https://www.apicountries.com/countries"
 
@@ -67,7 +69,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        ## Creates background thread for network request
+#Task 3 ## Creates background thread for network request using the logic in the WorkerThread class (line 114)
         self.worker = WorkerThread()
         self.worker.countries_ready.connect(self.update_countries)
         self.worker.start()
@@ -97,7 +99,7 @@ class Ui_MainWindow(object):
     def update_display(self):
         country = self.comboB1.currentText()
 
-        ## Updates label1 to show selected country
+#Task 2 ## Updates label1 to show selected country
         self.label1.setText(f"Selected: {country}")
         self.label1.adjustSize()
         
@@ -108,22 +110,16 @@ class Ui_MainWindow(object):
             self.imageLabel1.setPixmap(pixmap)
         else:
             print(f"Failed to load image for {country}: {e}")
-
-    def menuClicked(self, text):
-        self.label1.setText(text)
-        self.label1.adjustSize()
         
-    def comboPressed(self):
-        print(self.comboB1.currentText())
 
-
-## Logic for thread that fetches the country names and their flag URLs from API
+#Task 1 ## Logic for thread that fetches the country names and their flag URLs from API
 class WorkerThread(QThread):
     countries_ready = QtCore.pyqtSignal(list, dict)
     def run(self):
         response = requests.get(base_url)
         print(response)
 
+        ## Logic to populate the combobox using the provided API
         if response.status_code == 200:
             country_data = response.json()
             country_names = sorted([country["name"] for country in country_data])
@@ -133,13 +129,12 @@ class WorkerThread(QThread):
             print(f"Failed to retrieve {response.status_code}")
             self.countries_ready.emit([])
         
-
 if __name__ == "__main__":
     import sys
     import argparse
     from PyQt5 import QtWidgets
 
-    ## Parser to preselect a country
+#Task 4 ## Parser to preselect a country from the command line
     parser = argparse.ArgumentParser(description="Country Picker with optional default selection.")
     parser.add_argument("--select", type=str, help="Pre-select a country."
     )
