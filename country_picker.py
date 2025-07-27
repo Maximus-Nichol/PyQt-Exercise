@@ -74,7 +74,7 @@ class Ui_MainWindow(object):
         self.worker.start()
         
         ## Flag update
-        self.comboB1.currentIndexChanged.connect(self.update_flag_index)
+        self.comboB1.currentIndexChanged.connect(self.update_display)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -91,9 +91,14 @@ class Ui_MainWindow(object):
         self.flag_urls = flags
         self.comboB1.addItems(country_names)
         
-    ## Logic for changing flag, downloads image data and converts to QPixmap
-    def update_flag_index(self):
+    ## Logic for label updates, and responsible for downloading the image data and then converting to QPixmap
+    def update_display(self):
         country = self.comboB1.currentText()
+
+        ## Updates label1 to show selected country
+        self.label1.setText(f"Selected: {country}")
+        self.label1.adjustSize()
+        
         if country in self.flag_urls:
             data = urlopen(self.flag_urls[country]).read()
             pixmap = QPixmap()
