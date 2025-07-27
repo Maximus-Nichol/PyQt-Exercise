@@ -9,44 +9,53 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtGui import QPixmap
+from urllib.request import urlopen
+
 import requests
 import threading
-import time
+
 
 base_url = "https://www.apicountries.com/countries"
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        
+        self.flag_urls = {}
+
+        ## Main Window setup
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(265, 357)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        
+
+        ## Country selection combobox
         self.comboB1 = QtWidgets.QComboBox(self.centralwidget)
         self.comboB1.setGeometry(QtCore.QRect(30, 60, 211, 31))
         self.comboB1.setCurrentText("")
         self.comboB1.setObjectName("comboB1")
-        
+
+        ## Label that changes based on country selected
         self.label1 = QtWidgets.QLabel(self.centralwidget)
         self.label1.setGeometry(QtCore.QRect(30, 20, 61, 31))
         self.label1.setObjectName("label1")
-        
+
+        ## Label that changes flag based on country selected
         self.imageLabel1 = QtWidgets.QLabel(self.centralwidget)
         self.imageLabel1.setGeometry(QtCore.QRect(180, 20, 61, 31))
         self.imageLabel1.setScaledContents(True)
         self.imageLabel1.setObjectName("imageLabel1")
-        
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 265, 21))
         self.menubar.setObjectName("menubar")
-        
+
+
         self.menuCountries = QtWidgets.QMenu(self.menubar)
         self.menuCountries.setObjectName("menuCountries")
-        
         self.menuInfo = QtWidgets.QMenu(self.menubar)
         self.menuInfo.setObjectName("menuInfo")
+
         
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -59,10 +68,13 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        #Creates background thread for network request
+        ## Creates background thread for network request
         self.worker = WorkerThread()
-        self.worker.countries_ready.connect(self.comboB1.addItems)
+        self.worker.countries_ready.connect(self.update_countries)
         self.worker.start()
+        
+        ## Flag update
+        self.comboB1.currentIndexChanged.connect(self.update_flag_index)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -74,16 +86,33 @@ class Ui_MainWindow(object):
         self.menuInfo.setStatusTip(_translate("MainWindow", "Exercise information"))
         self.menuInfo.setTitle(_translate("MainWindow", "Info"))
 
+    ## Logic for when countries and their flags are ready from the background thread
+    def update_countries(self, country_names, flags):
+        self.flag_urls = flags
+        self.comboB1.addItems(country_names)
+        
+    ## Logic for changing flag, downloads image data and converts to QPixmap
+    def update_flag_index(self):
+        country = self.comboB1.currentText()
+        if country in self.flag_urls:
+            data = urlopen(self.flag_urls[country]).read()
+            pixmap = QPixmap()
+            pixmap.loadFromData(data)
+            self.imageLabel1.setPixmap(pixmap)
+        else:
+            print(f"Failed to load image for {country}: {e}")
+
     def menuClicked(self, text):
         self.label1.setText(text)
         self.label1.adjustSize()
-
+        
     def comboPressed(self):
         print(self.comboB1.currentText())
 
 
+## Logic for thread that fetches the country names and their flag URLs from API
 class WorkerThread(QThread):
-    countries_ready = QtCore.pyqtSignal(list)
+    countries_ready = QtCore.pyqtSignal(list, dict)
     def run(self):
         response = requests.get(base_url)
         print(response)
@@ -91,11 +120,13 @@ class WorkerThread(QThread):
         if response.status_code == 200:
             country_data = response.json()
             country_names = sorted([country["name"] for country in country_data])
-            self.countries_ready.emit(country_names)
+            country_flags = {country["name"]: country["flags"]["png"] for country in country_data}
+            self.countries_ready.emit(country_names, country_flags)
         else:
             print(f"Failed to retrieve {response.status_code}")
             self.countries_ready.emit([])
-        
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
