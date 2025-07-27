@@ -14,11 +14,13 @@ import threading
 import time
 
 #Logic for network request
+
 base_url = "https://www.apicountries.com/countries"
+
 def get_countries():
     response = requests.get(base_url)
     print(response)
-    
+
     if response.status_code == 200:
         country_data = response.json()
         country_names = sorted([country["name"] for country in country_data])
@@ -26,23 +28,25 @@ def get_countries():
     else:
         print(f"Failed to retrieve {response.status_code}")
         return []
+    
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
+        country_thread = threading.Thread(target = get_countries)
+        country_thread.start()
+        
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(265, 357)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-
-        #Combobox, including API function call
+        
         self.comboB1 = QtWidgets.QComboBox(self.centralwidget)
         self.comboB1.setGeometry(QtCore.QRect(30, 60, 211, 31))
         self.comboB1.setCurrentText("")
         self.comboB1.setObjectName("comboB1")
         country_names = get_countries()
         self.comboB1.addItems(country_names)
-
-        #TODO: change label based on the country selected
+        
         self.label1 = QtWidgets.QLabel(self.centralwidget)
         self.label1.setGeometry(QtCore.QRect(30, 20, 61, 31))
         self.label1.setObjectName("label1")
@@ -73,7 +77,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -84,10 +88,13 @@ class Ui_MainWindow(object):
         self.menuInfo.setStatusTip(_translate("MainWindow", "Exercise information"))
         self.menuInfo.setTitle(_translate("MainWindow", "Info"))
 
+    def menuClicked(self, text):
+        self.label1.setText(text)
+        self.label1.adjustSize()
+        
     def comboPressed(self):
         print(self.comboB1.currentText())
         
-
 
 if __name__ == "__main__":
     import sys
