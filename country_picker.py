@@ -17,8 +17,6 @@ import requests
 import threading
 import argparse
 
-# I have attempted each step in the exercise on the lines highlighted in the README. 
-# Each stage is marked with 'Task' for readability.
 
 base_url = "https://www.apicountries.com/countries"
 
@@ -115,6 +113,7 @@ class Ui_MainWindow(object):
 #Task 1 ## Logic for thread that fetches the country names and their flag URLs from API
 class WorkerThread(QThread):
     countries_ready = QtCore.pyqtSignal(list, dict)
+    
     def run(self):
         response = requests.get(base_url)
         print(response)
@@ -122,13 +121,19 @@ class WorkerThread(QThread):
         ## Logic to populate the combobox using the provided API
         if response.status_code == 200:
             country_data = response.json()
-            country_names = sorted([country["name"] for country in country_data])
-            country_flags = {country["name"]: country["flags"]["png"] for country in country_data}
+            country_names, country_flags = call_country_data(country_data)
             self.countries_ready.emit(country_names, country_flags)
         else:
             print(f"Failed to retrieve {response.status_code}")
             self.countries_ready.emit([])
+
+
+def call_country_data(country_data):
+    country_names = sorted([country["name"] for country in country_data])
+    country_flags = {country["name"]: country["flags"]["png"] for country in country_data}
+    return country_names, country_flags
         
+
 if __name__ == "__main__":
     import sys
     import argparse
