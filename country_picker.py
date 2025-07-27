@@ -58,22 +58,12 @@ class Ui_MainWindow(object):
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 265, 21))
         self.menubar.setObjectName("menubar")
-
-
-        self.menuCountries = QtWidgets.QMenu(self.menubar)
-        self.menuCountries.setObjectName("menuCountries")
-        self.menuInfo = QtWidgets.QMenu(self.menubar)
-        self.menuInfo.setObjectName("menuInfo")
-
         
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         
-        self.menubar.addAction(self.menuCountries.menuAction())
-        self.menubar.addAction(self.menuInfo.menuAction())
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -91,10 +81,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label1.setText(_translate("MainWindow", "Selected:"))
         self.imageLabel1.setText(_translate("MainWindow", "---"))
-        self.menuCountries.setStatusTip(_translate("MainWindow", "Select a country"))
-        self.menuCountries.setTitle(_translate("MainWindow", "Countries"))
-        self.menuInfo.setStatusTip(_translate("MainWindow", "Exercise information"))
-        self.menuInfo.setTitle(_translate("MainWindow", "Info"))
 
     ## Logic for when countries and their flags are ready from the background thread
     def update_countries(self, country_names, flags):
